@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  waf-core:
+    build: .
+    ports:
+      - "8000:8000"
+      - "8080:8080"  # Dashboard
+    volumes:
+      - ./logs:/app/logs
+      - ./models:/app/models
+      - ./config:/app/config
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_URL=postgresql://waf_user:waf_pass@postgres:5432/waf_db
+      - ELASTICSEARCH_URL=http://elasticsearch:9200
+    depends_on:
+      - redis
+      - postgres
+      - elasticsearch
+    networks:
+      - waf-network
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - waf-network
+
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: waf_db
+      POSTGRES_USER: waf_user
+      POSTGRES_PASSWORD: waf_pass
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - waf-network
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.11.0
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    volumes:
+      - elasticsearch_data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - waf-network
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - waf-network
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    networks:
+      - waf-network
+
+volumes:
+  redis_data:
+  postgres_data:
+  elasticsearch_data:
+  prometheus_data:
+  grafana_data:
+
+networks:
+  waf-network:
+    driver: bridge
