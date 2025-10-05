@@ -1,0 +1,31 @@
+# Prometheus configuration for WAF monitoring
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+rule_files:
+  - "waf_alerts.yml"
+
+scrape_configs:
+  - job_name: 'waf-metrics'
+    static_configs:
+      - targets: ['localhost:9090']
+    scrape_interval: 5s
+    metrics_path: /metrics
+
+  - job_name: 'waf-application'
+    static_configs:
+      - targets: ['localhost:8000']
+    scrape_interval: 10s
+    metrics_path: /metrics
+
+  - job_name: 'node-exporter'
+    static_configs:
+      - targets: ['localhost:9100']
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093

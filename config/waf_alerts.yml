@@ -1,0 +1,76 @@
+# WAF Alerting Rules for Prometheus
+
+groups:
+- name: waf_alerts
+  rules:
+  - alert: HighThreatDetectionRate
+    expr: rate(waf_threats_detected_total[5m]) > 10
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High threat detection rate"
+      description: "WAF is detecting threats at a rate of {{ $value }} per second"
+
+  - alert: CriticalThreatDetected
+    expr: increase(waf_threats_detected_total{severity="CRITICAL"}[1m]) > 0
+    for: 0s
+    labels:
+      severity: critical
+    annotations:
+      summary: "Critical threat detected"
+      description: "Critical severity threat detected: {{ $labels.threat_type }}"
+
+  - alert: WAFHighCPUUsage
+    expr: waf_cpu_usage_percent > 80
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "WAF high CPU usage"
+      description: "WAF CPU usage is {{ $value }}%"
+
+  - alert: WAFHighMemoryUsage
+    expr: waf_memory_usage_bytes{type="used"} / waf_memory_usage_bytes{type="total"} * 100 > 85
+    for: 5m
+    labels:
+      severity: warning
+    annotations:
+      summary: "WAF high memory usage"
+      description: "WAF memory usage is {{ $value }}%"
+
+  - alert: WAFDown
+    expr: up{job="waf-application"} == 0
+    for: 1m
+    labels:
+      severity: critical
+    annotations:
+      summary: "WAF is down"
+      description: "WAF application is not responding"
+
+  - alert: HighAuthenticationFailureRate
+    expr: rate(waf_authentication_attempts_total{result="FAILED"}[5m]) > 5
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High authentication failure rate"
+      description: "Authentication failure rate is {{ $value }} per second"
+
+  - alert: AnomalyDetectionSpike
+    expr: rate(waf_anomalies_detected_total[5m]) > 20
+    for: 3m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Anomaly detection spike"
+      description: "Anomaly detection rate is {{ $value }} per second"
+
+  - alert: SSLCertificateIssues
+    expr: increase(waf_ssl_certificate_issues_total[1h]) > 10
+    for: 0s
+    labels:
+      severity: warning
+    annotations:
+      summary: "SSL certificate issues detected"
+      description: "{{ $value }} SSL certificate issues in the last hour"
