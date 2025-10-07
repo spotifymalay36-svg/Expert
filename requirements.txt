@@ -70,6 +70,7 @@ psutil==5.9.6
 memory-profiler==0.61.0
 
 # Federated Learning
+tensorflow-federated==0.61.0
 pysyft==0.8.7
 flower==1.6.0
 

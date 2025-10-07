@@ -80,7 +80,14 @@ class Settings(BaseSettings):
     
     # Federated Learning
     enable_federated_learning: bool = Field(default=False, env="ENABLE_FEDERATED_LEARNING")
-    federation_server: str = Field(default="localhost:8080", env="FEDERATION_SERVER")
+    federated_server_url: str = Field(default="http://localhost:8001", env="FEDERATED_SERVER_URL")
+    federated_node_id: str = Field(default="node_1", env="FEDERATED_NODE_ID")
+    federated_privacy_budget: float = Field(default=1.0, env="FEDERATED_PRIVACY_BUDGET")
+    
+    # Reinforcement Learning
+    enable_rl_optimization: bool = Field(default=True, env="ENABLE_RL_OPTIMIZATION")
+    rl_optimization_interval: int = Field(default=300, env="RL_OPTIMIZATION_INTERVAL")  # seconds
+    rl_training_enabled: bool = Field(default=True, env="RL_TRAINING_ENABLED")
     
     class Config:
         env_file = ".env"
